@@ -1,0 +1,20 @@
+
+config system
+	option ttylogin '0'
+	option log_size '64'
+	option urandom_seed '0'
+	option zonename 'Asia/Shanghai'
+	option hostname 'openwrt'
+	option log_proto 'udp'
+	option conloglevel '8'
+	option cronloglevel '5'
+	option timezone 'CST-8'
+
+config timeserver 'ntp'
+	option enable_server '1'
+	list server 'ntp.aliyun.com'
+	list server 'ntp1.aliyun.com'
+	list server 'time1.cloud.tencent.com'
+	list server 'time.ustc.edu.cn'
+	list server 'cn.pool.ntp.org'
+

@@ -1,2 +1,5 @@
 # openwrt-imgbuild
-使用 lede 预编译固件
+
+openwrt imagebuild 自定义固件,自用脚本
+
+
