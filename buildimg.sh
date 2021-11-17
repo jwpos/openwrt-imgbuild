@@ -8,9 +8,9 @@ SCRIPTDIR=$(cd "$(dirname "$0")";pwd)
 NAME=openwrt-imagebuilder-${VERSION}-${TARGET}.Linux-x86_64
 IMAGE_URL=${MIRROR}/releases/${VERSION}/targets/${TARGET/-//}/${NAME}.tar.xz
 [ -f ${PROFILE}.tar.xz ] || wget -O ${PROFILE}.tar.xz ${IMAGE_URL} >nul || exit $?
-[ -d ${NAME} ] || tar xJvf ${PROFILE}.tar.xz >nul || exit $?
+ tar xJvf ${PROFILE}.tar.xz >nul || exit $?
 cd ${NAME} || exit $?
-[ -z ${MIRROR} ] || sed -i "s/downloads.openwrt.org/${MIRROR}/" repositories.conf
+[ -z ${MIRROR} ] || sed -i "s@downloads.openwrt.org@${MIRROR}@" repositories.conf
 [ -d packages ] || mkdir packages
 cp -af ${SCRIPTDIR}/addon_packages/*.ipk packages
 grep '^src addon' repositories.conf  || echo src addon file:packages >> repositories.conf
