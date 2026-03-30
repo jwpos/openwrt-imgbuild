@@ -26,7 +26,13 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
-
+      - name: 清理旧的工作流记录
+        uses: MattraX/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0          # 保留天数 (0 表示不按天数删，按次数删)
+          keep_minimum_runs: 3    # 始终保留最近的 3 次记录
       - name: 环境准备
         run: |
           sudo apt-get update
