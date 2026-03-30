@@ -4,19 +4,17 @@ set -x
 # 确保脚本在出错时退出
 set -e
 
-VERSION=${VERSION:-24.10.3}
-TARGET=${TARGET:-x86-64}
-PROFILE=${PROFILE:-generic}
+VERSION=${VERSION:-24.10.5}
+TARGET=${TARGET:-mediatek-filogic}
+PROFILE=${PROFILE:-cmcc_rax3000m}
 MIRROR=${MIRROR:-downloads.immortalwrt.org}
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 BIN_DIR="${SCRIPTDIR}/bin"
 
 mkdir -p "${BIN_DIR}"
 
-# 转换平台路径：x86-64 -> x86/64
-TARGET_PATH=${TARGET//-/\/}
 NAME="immortalwrt-imagebuilder-${VERSION}-${TARGET}.Linux-x86_64"
-URL_BASE="https://${MIRROR}/releases/${VERSION}/targets/${TARGET_PATH}"
+URL_BASE="https://${MIRROR}/releases/${VERSION}/targets/${TARGET//-//}"
 
 echo "--- 调试信息 ---"
 echo "工作目录: $(pwd)"
@@ -60,16 +58,16 @@ fi
 
 # 开始编译
 echo "--- 执行 Make ---"
-make image PROFILE=${PROFILE} PACKAGES="${PACKAGES} luci-i18n-base-zh-cn"
+make image PROFILE=${PROFILE} PACKAGES="${PACKAGES} luci-i18n-base-zh-cn luci-i18n-openvpn-zh-cn luci-proto-wireguard luci-i18n-zerotier-zh-cn luci-i18n-appfilter-zh-cn luci-i18n-wechatpush-zh-cn luci-i18n-wol-zh-cn luci-i18n-acl-zh-cn"
 
 # --- 修改后的打包逻辑 ---
 echo "--- 正在打包目标目录 ---"
 
 # 这里的 TARGET_PATH 是 x86/64 这种格式
 # 源目录路径：bin/targets/x86/64
-SOURCE_DIR="bin/targets/${TARGET//-/\/}"
+SOURCE_DIR="bin/targets/${TARGET//-//}"
 # 定义压缩包文件名
-ARCHIVE_NAME="firmware_build_${VERSION}_${TARGET}.tar.gz"
+ARCHIVE_NAME="${PROFILE}-${VERSION}.tar.gz"
 
 if [ -d "$SOURCE_DIR" ]; then
     echo "找到目标目录: $SOURCE_DIR，正在打包..."
