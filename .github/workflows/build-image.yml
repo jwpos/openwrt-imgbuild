@@ -15,6 +15,10 @@ on:
         description: '配置文件'
         required: true
         default: 'cmcc_rax3000m'
+      packages:
+        description: '要添加的软件包 (空格分隔，例如: luci-app-openwrt-vpnc autocore-arm)'
+        required: false
+        default: 'luci-i18n-base-zh-cn luci-i18n-opkg-zh-cn'        
 
 jobs:
   build:
@@ -33,6 +37,8 @@ jobs:
           VERSION: ${{ github.event.inputs.version }}
           TARGET: ${{ github.event.inputs.target }}
           PROFILE: ${{ github.event.inputs.profile }}
+          PACKAGES: ${{ github.event.inputs.packages }}
+
         run: |
           chmod +x build-image.sh
           ./build-image.sh
