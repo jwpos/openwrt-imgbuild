@@ -46,7 +46,7 @@ jobs:
 
       # 关键步骤：如果上方脚本失败，启动远程 SSH 调试
       - name: 进入远程调试模式 (仅限失败时)
-        if: failure()
+        #if: failure()
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true # 仅允许触发者访问，更安全
