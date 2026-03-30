@@ -62,5 +62,23 @@ fi
 echo "--- 执行 Make ---"
 make image PROFILE=${PROFILE} PACKAGES="${PACKAGES} luci-i18n-base-zh-cn"
 
-# 拷贝结果
-cp -f bin/targets/${TARGET_PATH}/*.img.gz "${BIN_DIR}/" || echo "警告: 未找到生成的镜像文件"
+# --- 修改后的打包逻辑 ---
+echo "--- 正在打包目标目录 ---"
+
+# 这里的 TARGET_PATH 是 x86/64 这种格式
+# 源目录路径：bin/targets/x86/64
+SOURCE_DIR="bin/targets/${TARGET//-/\/}"
+# 定义压缩包文件名
+ARCHIVE_NAME="firmware_build_${VERSION}_${TARGET}.tar.gz"
+
+if [ -d "$SOURCE_DIR" ]; then
+    echo "找到目标目录: $SOURCE_DIR，正在打包..."
+    # 使用 -C 切换到目录内部，避免压缩包内出现冗长的层级路径
+    tar -zcvf "${BIN_DIR}/${ARCHIVE_NAME}" -C "$SOURCE_DIR" .
+    echo "打包成功: ${BIN_DIR}/${ARCHIVE_NAME}"
+else
+    echo "错误: 目标目录 $SOURCE_DIR 不存在！编译可能未生成任何结果。"
+    # 调试：列出当前目录结构，方便在 GitHub Action 日志中查看
+    find bin -maxdepth 3
+    exit 1
+fi

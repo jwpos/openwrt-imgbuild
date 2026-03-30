@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ImmortalWrt-${{ github.event.inputs.version }}
-          path: bin/*.img.gz
+          path: bin/*.gz
 
       # 关键步骤：如果上方脚本失败，启动远程 SSH 调试
       - name: 进入远程调试模式 (仅限失败时)
