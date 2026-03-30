@@ -6,15 +6,15 @@ on:
       version:
         description: '固件版本'
         required: true
-        default: '24.10.3'
+        default: '24.10.5'
       target:
         description: '设备平台'
         required: true
-        default: 'x86-64'
+        default: 'mediatek-filogic'
       profile:
         description: '配置文件'
         required: true
-        default: 'generic'
+        default: 'cmcc_rax3000m'
 
 jobs:
   build:
