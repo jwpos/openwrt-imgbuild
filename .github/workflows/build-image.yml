@@ -1,0 +1,90 @@
+name: 手动构建 ImmortalWrt 固件
+
+# 定义手动触发参数
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '固件版本 (VERSION)'
+        required: true
+        default: '24.10.3'
+      target:
+        description: '设备目标平台 (TARGET)'
+        required: true
+        default: 'x86-64'
+      profile:
+        description: '设备配置文件 (PROFILE)'
+        required: true
+        default: 'generic'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装依赖工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget zstd tar bash
+
+      - name: 执行构建脚本
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          TARGET: ${{ github.event.inputs.target }}
+          PROFILE: ${{ github.event.inputs.profile }}
+          MIRROR: downloads.immortalwrt.org
+        run: |
+          # 创建输出目录
+          mkdir -p bin
+          
+          # 设置变量
+          NAME="immortalwrt-imagebuilder-${VERSION}-${TARGET}.Linux-x86_64"
+          # 注意：新版本通常是 .tar.zst，旧版本是 .tar.xz
+          # 我们先尝试探测或直接根据版本号逻辑判断
+          URL_BASE="${MIRROR}/releases/${VERSION}/targets/${TARGET//-//}"
+          
+          echo "正在下载 Image Builder..."
+          # 尝试下载 .zst 格式，如果失败则尝试 .xz (兼容旧版)
+          if wget -q --spider "${URL_BASE}/${NAME}.tar.zst"; then
+              EXTENSION="tar.zst"
+          else
+              EXTENSION="tar.xz"
+          fi
+          
+          FILE_NAME="${PROFILE}.${EXTENSION}"
+          wget -O "$FILE_NAME" "${URL_BASE}/${NAME}.${EXTENSION}"
+          
+          echo "正在解压 $FILE_NAME..."
+          if [[ "$EXTENSION" == "tar.zst" ]]; then
+              zstd -d "$FILE_NAME" -o "${PROFILE}.tar"
+              tar -xvf "${PROFILE}.tar"
+          else
+              tar -xJvf "$FILE_NAME"
+          fi
+
+          cd ${NAME}
+          
+          # 修改软件源
+          sed -i "s@downloads.immortalwrt.org@${MIRROR}@" repositories.conf
+          
+          # 处理插件包 (如果有 addon_packages 目录)
+          if [ -d "${GITHUB_WORKSPACE}/addon_packages" ]; then
+              mkdir -p packages
+              cp -af ${GITHUB_WORKSPACE}/addon_packages/*.ipk packages/ 2>/dev/null || true
+              grep -q '^src addon' repositories.conf || echo "src addon file:$(pwd)/packages" >> repositories.conf
+          fi
+
+          # 开始构建固件
+          # 包含了您之前脚本中的中文语言包基础配置
+          make image PROFILE=${PROFILE} PACKAGES="${PACKAGES} luci-i18n-base-zh-cn"
+          
+          # 拷贝结果
+          cp -f bin/targets/${TARGET/-//}/*.img.gz ${GITHUB_WORKSPACE}/bin/
+
+      - name: 上传固件产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: ImmortalWrt-Firmware-${{ github.event.inputs.version }}
+          path: bin/*.img.gz
