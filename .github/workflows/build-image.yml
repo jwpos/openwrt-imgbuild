@@ -48,5 +48,5 @@ jobs:
       - name: 进入远程调试模式 (仅限失败时)
         #if: failure()
         uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true # 仅允许触发者访问，更安全
+        #with:
+        #  limit-access-to-actor: true # 仅允许触发者访问，更安全
