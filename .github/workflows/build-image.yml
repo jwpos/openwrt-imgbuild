@@ -37,16 +37,29 @@ jobs:
           chmod +x build-image.sh
           ./build-image.sh
 
-      - name: 上传产物
-        if: success()
-        uses: actions/upload-artifact@v4
+      - name: 上传到 待发布 (GitHub Release)
+        uses: softprops/action-gh-release@v2
+        if: success() # 仅在构建成功时上传
         with:
-          name: ImmortalWrt-${{ github.event.inputs.version }}
-          path: bin/*.gz
-
+          files: bin/*.tar.gz
+          # 设置 Release 名称和标签
+          name: ImmortalWrt-${{ github.event.inputs.version }}-${{ github.event.inputs.target }}
+          tag_name: ${{ github.event.inputs.version }}-${{ github.event.inputs.target }}-${{ github.run_id }}
+          body: |
+            ## 固件构建信息
+            - **版本**: ${{ github.event.inputs.version }}
+            - **平台**: ${{ github.event.inputs.target }}
+            - **配置文件**: ${{ github.event.inputs.profile }}
+            - **构建时间**: ${{ env.BUILD_TIME }}
+            ---
+            *此版本为自动构建生成的待发布版本。*
+          draft: true  # 设置为草稿（待发布状态）
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # 关键步骤：如果上方脚本失败，启动远程 SSH 调试
       - name: 进入远程调试模式 (仅限失败时)
-        #if: failure()
+        if: failure()
         uses: mxschmitt/action-tmate@v3
-        #with:
-        #  limit-access-to-actor: true # 仅允许触发者访问，更安全
+        with:
+          limit-access-to-actor: true # 仅允许触发者访问，更安全
